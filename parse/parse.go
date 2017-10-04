@@ -14,7 +14,7 @@ type ParseRequestOptions struct {
 func NewDefaultParseRequestOptions() *ParseRequestOptions {
 
 	opts := ParseRequestOptions{
-		MaxRequests: 10,
+		MaxRequests: -1, // default is none, also set in ProcessBatchOptions
 	}
 
 	return &opts
@@ -31,7 +31,7 @@ func ParseRequest(body []byte, opts *ParseRequestOptions) ([]batch.BatchRequest,
 		return nil, errors.New("Invalid batch request")
 	}
 
-	if count > opts.MaxRequests {
+	if opts.MaxRequests != -1 && count > opts.MaxRequests {
 		return nil, errors.New("Too many requests")
 	}
 

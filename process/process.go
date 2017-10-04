@@ -6,54 +6,46 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-api"
 	"github.com/whosonfirst/go-whosonfirst-api-batch"
 	"github.com/whosonfirst/go-whosonfirst-api-batch/parse"
+	"github.com/whosonfirst/go-whosonfirst-api-batch/request"
 	"github.com/whosonfirst/go-whosonfirst-api/client"
 	"github.com/whosonfirst/go-whosonfirst-api/endpoint"
-	"github.com/whosonfirst/go-whosonfirst-hash"
 	"log"
 	"net/url"
 	"time"
 )
 
 type ProcessBatchOptions struct {
-	APIKey string
+	APIKey      string
+	MaxRequests int
 	// something something something an abstract cache interface (including a "null" cache)
 }
 
 func NewDefaultProcessBatchOptions() *ProcessBatchOptions {
 
 	opts := ProcessBatchOptions{
-		APIKey: "mapzen-xxxxxxx",
+		APIKey:      "mapzen-xxxxxxx",
+		MaxRequests: 10,
 	}
 
 	return &opts
 }
 
-func ProcessBatch(input []byte, opts *ProcessBatchOptions) (*batch.BatchResponseSet, error) {
+func ProcessBatch(input []byte, process_opts *ProcessBatchOptions) (*batch.BatchResponseSet, error) {
 
-	if opts.APIKey == "mapzen-xxxxxxx" {
+	if process_opts.APIKey == "mapzen-xxxxxxx" {
 		return nil, errors.New("Invalid API key")
 	}
 
-	hasher, err := hash.NewWOFHash()
+	request_key, err := request.NewRequestKey(process_opts.APIKey, input)
 
 	if err != nil {
 		return nil, err
-	}
-
-	input_hash, err := hasher.HashBytes(input)
-
-	if err != nil {
-		return nil, err
-	}
-
-	request_key := batch.BatchRequestKey{
-		APIKey:    opts.APIKey,
-		InputHash: input_hash,
 	}
 
 	// check to see request_key isn't already being processed
 
 	parse_opts := parse.NewDefaultParseRequestOptions()
+	parse_opts.MaxRequests = process_opts.MaxRequests
 
 	requests, err := parse.ParseRequest(input, parse_opts)
 
@@ -62,7 +54,7 @@ func ProcessBatch(input []byte, opts *ProcessBatchOptions) (*batch.BatchResponse
 	}
 
 	request_set := batch.BatchRequestSet{
-		APIKey:     opts.APIKey,
+		APIKey:     process_opts.APIKey,
 		Requests:   requests,
 		RequestKey: request_key,
 	}

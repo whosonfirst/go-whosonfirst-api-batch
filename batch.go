@@ -26,11 +26,11 @@ type BatchResponse struct {
 type BatchRequestSet struct {
 	APIKey   string
 	Requests []BatchRequest
-	RequestKey BatchRequestKey
+	RequestKey *BatchRequestKey
 }
 
 type BatchResponseSet struct {
      Responses []interface{}
-     RequestKey	BatchRequestKey
+     RequestKey	*BatchRequestKey
      Timing    time.Duration
 }     

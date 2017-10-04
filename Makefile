@@ -11,10 +11,12 @@ self:   prep
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/http
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/parse
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/process
+	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/request
 	cp *.go src/github.com/whosonfirst/go-whosonfirst-api-batch/
 	cp http/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/http/
 	cp parse/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/parse/
 	cp process/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/process/
+	cp request/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/request/
 	if test ! -d src; then mkdir src; fi
 	cp -r vendor/src/* src/
 
@@ -38,6 +40,7 @@ fmt:
 	go fmt http/*.go
 	go fmt parse/*.go
 	go fmt process/*.go
+	go fmt request/*.go
 
 bin:	self
 	@GOPATH=$(shell pwd) go build -o bin/wof-api-batch-server cmd/wof-api-batch-server.go
