@@ -33,9 +33,10 @@ func BatchHandler() (gohttp.Handler, error) {
 			return
 		}
 
-		// see this signature? it _will_ change... (20171004/thisisaaronland)
+		process_opts := process.NewDefaultProcessBatchOptions()
+		process_opts.APIKey = api_key
 
-		response_set, err := process.ProcessBatch(input, api_key)
+		response_set, err := process.ProcessBatch(input, process_opts)
 
 		if err != nil {
 			gohttp.Error(rsp, err.Error(), gohttp.StatusInternalServerError)

@@ -14,11 +14,25 @@ import (
 	"time"
 )
 
-// see this function signature? it _will_ change... (20171004/thisisaaronland)
+type ProcessBatchOptions struct {
+	APIKey string
+	// something something something an abstract cache interface (including a "null" cache)
+}
 
-func ProcessBatch(input []byte, api_key string) (*batch.BatchResponseSet, error) {
+func NewDefaultProcessBatchOptions() *ProcessBatchOptions {
 
-	// please wrap all of this in a library somewhere...
+	opts := ProcessBatchOptions{
+		APIKey: "mapzen-xxxxxxx",
+	}
+
+	return &opts
+}
+
+func ProcessBatch(input []byte, opts *ProcessBatchOptions) (*batch.BatchResponseSet, error) {
+
+	if opts.APIKey == "mapzen-xxxxxxx" {
+		return nil, errors.New("Invalid API key")
+	}
 
 	hasher, err := hash.NewWOFHash()
 
@@ -33,7 +47,7 @@ func ProcessBatch(input []byte, api_key string) (*batch.BatchResponseSet, error)
 	}
 
 	request_key := batch.BatchRequestKey{
-		APIKey:    api_key,
+		APIKey:    opts.APIKey,
 		InputHash: input_hash,
 	}
 
@@ -48,13 +62,10 @@ func ProcessBatch(input []byte, api_key string) (*batch.BatchResponseSet, error)
 	}
 
 	request_set := batch.BatchRequestSet{
-		APIKey:     api_key,
+		APIKey:     opts.APIKey,
 		Requests:   requests,
 		RequestKey: request_key,
 	}
-
-	// log api_key + "#" + hash here - it would be nice to all of this using
-	// BatchRequestSet but that means always parsing body first...
 
 	// see notes above wrt a timeout context (as in: it does not exist yet)
 
