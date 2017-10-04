@@ -5,17 +5,66 @@ import (
 	"errors"
 	"github.com/whosonfirst/go-whosonfirst-api"
 	"github.com/whosonfirst/go-whosonfirst-api-batch"
+	"github.com/whosonfirst/go-whosonfirst-api-batch/parse"
 	"github.com/whosonfirst/go-whosonfirst-api/client"
 	"github.com/whosonfirst/go-whosonfirst-api/endpoint"
+	"github.com/whosonfirst/go-whosonfirst-hash"
 	"log"
 	"net/url"
 	"time"
 )
 
+// see this function signature? it _will_ change... (20171004/thisisaaronland)
+
+func ProcessBatch(input []byte, api_key string) (*batch.BatchResponseSet, error) {
+
+	// please wrap all of this in a library somewhere...
+
+	hasher, err := hash.NewWOFHash()
+
+	if err != nil {
+		return nil, err
+	}
+
+	input_hash, err := hasher.HashBytes(input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	request_key := batch.BatchRequestKey{
+		APIKey:    api_key,
+		InputHash: input_hash,
+	}
+
+	// check to see request_key isn't already being processed
+
+	parse_opts := parse.NewDefaultParseRequestOptions()
+
+	requests, err := parse.ParseRequest(input, parse_opts)
+
+	if err != nil {
+		return nil, err
+	}
+
+	request_set := batch.BatchRequestSet{
+		APIKey:     api_key,
+		Requests:   requests,
+		RequestKey: request_key,
+	}
+
+	// log api_key + "#" + hash here - it would be nice to all of this using
+	// BatchRequestSet but that means always parsing body first...
+
+	// see notes above wrt a timeout context (as in: it does not exist yet)
+
+	return ProcessRequestSet(request_set)
+}
+
 // please for to be passing in a timeout context here and to make
 // sure it bubbles down to any individual requests being processed
 
-func ProcessBatch(rs batch.BatchRequestSet) (*batch.BatchResponseSet, error) {
+func ProcessRequestSet(rs batch.BatchRequestSet) (*batch.BatchResponseSet, error) {
 
 	// maybe just pass the client as part of the function call?
 
@@ -81,8 +130,9 @@ func ProcessBatch(rs batch.BatchRequestSet) (*batch.BatchResponseSet, error) {
 	t2 := time.Since(t1)
 
 	response_set := batch.BatchResponseSet{
-		Responses: responses,
-		Timing:    t2,
+		RequestKey: rs.RequestKey,
+		Responses:  responses,
+		Timing:     t2,
 	}
 
 	return &response_set, nil

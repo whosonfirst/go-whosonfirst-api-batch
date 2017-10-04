@@ -2,11 +2,7 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/whosonfirst/go-whosonfirst-api-batch"
-	"github.com/whosonfirst/go-whosonfirst-api-batch/parse"
 	"github.com/whosonfirst/go-whosonfirst-api-batch/process"
-	"github.com/whosonfirst/go-whosonfirst-hash"
 	"io/ioutil"
 	"log"
 	gohttp "net/http"
@@ -37,53 +33,18 @@ func BatchHandler() (gohttp.Handler, error) {
 			return
 		}
 
-		// please wrap all of this in a library somewhere...
+		// see this signature? it _will_ change... (20171004/thisisaaronland)
 
-		hasher, err := hash.NewWOFHash()
-
-		if err != nil {
-			gohttp.Error(rsp, err.Error(), gohttp.StatusBadRequest)
-			return
-		}
-
-		input_hash, err := hasher.HashBytes(input)
-
-		if err != nil {
-			gohttp.Error(rsp, err.Error(), gohttp.StatusBadRequest)
-			return
-		}
-
-		request_key := fmt.Sprintf("%s#%s", api_key, input_hash)
-
-		// check to see request_key isn't already being processed
-
-		parse_opts := parse.NewDefaultParseRequestOptions()
-
-		requests, err := parse.ParseRequest(input, parse_opts)
-
-		if err != nil {
-			gohttp.Error(rsp, err.Error(), gohttp.StatusBadRequest)
-			return
-		}
-
-		request_set := batch.BatchRequestSet{
-			APIKey:   api_key,
-			Requests: requests,
-		}
-
-		// log api_key + "#" + hash here - it would be nice to all of this using
-		// BatchRequestSet but that means always parsing body first...
-
-		// see notes above wrt a timeout context (as in: it does not exist yet)
-
-		response_set, err := process.ProcessBatch(request_set)
+		response_set, err := process.ProcessBatch(input, api_key)
 
 		if err != nil {
 			gohttp.Error(rsp, err.Error(), gohttp.StatusInternalServerError)
 			return
 		}
 
-		log.Println("TIMING", request_key, response_set.Timing)
+		// please log this somewhere...
+
+		log.Println("TIMING", response_set.RequestKey.String(), response_set.Timing)
 
 		// something something something non-JSON responses something something
 		// something see above in parse_request for discussion about SPR...
