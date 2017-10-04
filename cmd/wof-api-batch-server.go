@@ -19,7 +19,7 @@ func main() {
 
 	// fetch list of valid API methods from the api.spec.method and pass along
 	// to handler for basic validation on all requests here...
-	
+
 	batch_handler, err := http.BatchHandler()
 
 	if err != nil {
