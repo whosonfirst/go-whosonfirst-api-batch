@@ -1,6 +1,6 @@
 # go-whosonfirst-api-batch
 
-Go package for working with batch [Who's On First API](https://mapzen.com/documentation/places/) requests.
+Go package for working with batch [Who's On First (Mapzen Places) API](https://mapzen.com/documentation/places/) requests.
 
 ## Install
 
