@@ -23,8 +23,7 @@ func BatchHandler() (gohttp.Handler, error) {
 			return
 		}
 
-		// something something something check the size of req.Body before
-		// reading it all in to memory or at least during the reading...
+		req.Body = gohttp.MaxBytesReader(rsp, req.Body, 1024) // please make MaxBytes an option
 
 		input, err := ioutil.ReadAll(req.Body)
 
