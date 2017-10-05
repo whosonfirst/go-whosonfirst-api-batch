@@ -11,7 +11,7 @@ var cache *gocache.Cache
 var mu *sync.RWMutex
 
 func init() {
-	cache = gocache.New(30*time.Minute, 60*time.Minute)
+	cache = gocache.New(5*time.Minute, 10*time.Minute)
 	mu = new(sync.RWMutex)
 }
 

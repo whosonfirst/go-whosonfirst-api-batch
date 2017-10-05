@@ -23,12 +23,12 @@ type ProcessBatchOptions struct {
 
 func NewDefaultProcessBatchOptions() *ProcessBatchOptions {
 
-	nl, _ := lock.NewNullLock()
+	request_lock, _ := lock.NewGoCacheLock()
 
 	opts := ProcessBatchOptions{
 		APIKey:      "mapzen-xxxxxxx",
 		MaxRequests: 10,
-		Lock:        nl,
+		Lock:        request_lock,
 	}
 
 	return &opts
