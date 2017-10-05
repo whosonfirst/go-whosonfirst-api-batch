@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+type BatchRequestLock interface {
+     Get(*BatchRequestKey) (bool, error)
+     Set(*BatchRequestKey) error
+     Unset(*BatchRequestKey) error
+}
+
 type BatchRequest map[string]string
 
 type BatchRequestKey struct {

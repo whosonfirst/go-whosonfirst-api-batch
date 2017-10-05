@@ -9,11 +9,13 @@ prep:
 self:   prep
 	if test -d src/github.com/whosonfirst/go-whosonfirst-api-batch; then rm -rf src/github.com/whosonfirst/go-whosonfirst-api-batch; fi
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/http
+	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/lock
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/parse
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/process
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-api-batch/request
 	cp *.go src/github.com/whosonfirst/go-whosonfirst-api-batch/
 	cp http/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/http/
+	cp lock/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/lock/
 	cp parse/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/parse/
 	cp process/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/process/
 	cp request/*.go src/github.com/whosonfirst/go-whosonfirst-api-batch/request/
@@ -23,7 +25,8 @@ self:   prep
 rmdeps:
 	if test -d src; then rm -rf src; fi 
 
-deps:   
+deps:
+	@GOPATH=$(GOPATH) go get -u "github.com/patrickmn/go-cache"
 	@GOPATH=$(GOPATH) go get -u "github.com/tidwall/gjson"
 	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-api"
 	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-hash"
@@ -38,6 +41,7 @@ vendor-deps: rmdeps deps
 fmt:
 	go fmt cmd/*.go
 	go fmt http/*.go
+	go fmt lock/*.go
 	go fmt parse/*.go
 	go fmt process/*.go
 	go fmt request/*.go

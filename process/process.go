@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/whosonfirst/go-whosonfirst-api"
 	"github.com/whosonfirst/go-whosonfirst-api-batch"
+	"github.com/whosonfirst/go-whosonfirst-api-batch/lock"
 	"github.com/whosonfirst/go-whosonfirst-api-batch/parse"
 	"github.com/whosonfirst/go-whosonfirst-api-batch/request"
 	"github.com/whosonfirst/go-whosonfirst-api/client"
@@ -17,14 +18,17 @@ import (
 type ProcessBatchOptions struct {
 	APIKey      string
 	MaxRequests int
-	// something something something an abstract cache interface (including a "null" cache)
+	Lock        batch.BatchRequestLock
 }
 
 func NewDefaultProcessBatchOptions() *ProcessBatchOptions {
 
+	nl, _ := lock.NewNullLock()
+
 	opts := ProcessBatchOptions{
 		APIKey:      "mapzen-xxxxxxx",
 		MaxRequests: 10,
+		Lock:        nl,
 	}
 
 	return &opts
@@ -42,7 +46,23 @@ func ProcessBatch(input []byte, process_opts *ProcessBatchOptions) (*batch.Batch
 		return nil, err
 	}
 
-	// check to see request_key isn't already being processed
+	request_lock := process_opts.Lock
+
+	locked, err := request_lock.Get(request_key)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if locked {
+		return nil, errors.New("batch request still being processed")
+	}
+
+	request_lock.Set(request_key)
+
+	defer func() {
+		request_lock.Unset(request_key)
+	}()
 
 	parse_opts := parse.NewDefaultParseRequestOptions()
 	parse_opts.MaxRequests = process_opts.MaxRequests
